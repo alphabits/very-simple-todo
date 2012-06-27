@@ -6,6 +6,8 @@ import sys
 from termcolor import colored
 
 
+# SETTINGS
+
 DATA_FILE = os.path.expanduser('~/.todos.json')
 COLORS = {
     'normal': 'blue',
@@ -16,13 +18,7 @@ URGENCY_LEVELS = COLORS.keys()
 DEFAULT_URGENCY = 'normal'
 
 
-def main():
-    ensure_data_file_exists()
-    todo_db = load_todos()
-    command, args, options = parse_command_arguments()
-    output = command(args, options, todo_db)
-    if output:
-        print output
+# UTIL FUNCTIONS
 
 def ensure_data_file_exists():
     if not os.path.isfile(DATA_FILE):
@@ -58,6 +54,9 @@ def get_option_parser():
     p.set_defaults(show_all=False)
     return p
 
+
+# OUTPUT FUNCTIONS
+
 def colorize(msg, color):
     return colored(msg, color, None, attrs=['bold'])
 
@@ -67,6 +66,9 @@ def print_todos(todos):
 def print_todo(todo):
     color = 'grey' if todo.completed else COLORS[todo.urgency_level]
     return colorize(todo.label(), color)
+
+
+# "DATABASE" FUNCTIONS
 
 def get_next_todo_id(todo_list):
     if not todo_list:
@@ -81,6 +83,7 @@ def save_todos(todo_list):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f)
 
+# COMMANDS
 
 def list_cmd(args, options, todo_list):
     if not options.show_all:
@@ -107,6 +110,9 @@ def delete_cmd(args, options, todo_list):
     todo_list = [todo for todo in todo_list if todo.id != id]
     save_todos(todo_list)
 
+
+# INPUT ARGUMENT HELPERS
+
 def get_todo_from_args_id(args):
     id = get_id_from_args(args)
     todo = get_todo_by_id(id, todo_list)
@@ -120,6 +126,8 @@ def get_id_from_args(args):
     return int(args[0])
 
 
+# ROUTE MAP
+
 COMMAND_ROUTES = {
     'list': list_cmd,
     'add': add_cmd,
@@ -128,6 +136,8 @@ COMMAND_ROUTES = {
 }
 COMMANDS = COMMAND_ROUTES.keys()
 
+
+# MODEL
 
 class Todo(object):
 
@@ -149,6 +159,17 @@ class Todo(object):
             'urgency_level': self.urgency_level,
             'completed': self.completed
         }
+
+
+# APPLICATION CONTROLLER
+
+def main():
+    ensure_data_file_exists()
+    todo_db = load_todos()
+    command, args, options = parse_command_arguments()
+    output = command(args, options, todo_db)
+    if output:
+        print output
 
 
 if __name__ == '__main__':
