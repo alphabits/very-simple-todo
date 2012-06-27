@@ -28,6 +28,8 @@ def ensure_data_file_exists():
 def load_todos():
     with open(DATA_FILE, 'r') as f:
         todo_db = [Todo(**todo_data) for todo_data in json.load(f)]
+    todo_db.sort()
+    todo_db.reverse()
     return todo_db
 
 def parse_command_arguments():
@@ -98,22 +100,33 @@ def add_cmd(args, options, todo_list):
     urgency_level = options.urgency_level
     todo_list.append(Todo(id, description, urgency_level))
     save_todos(todo_list)
-    return ''
+    return print_todos(todo_list)
 
 def complete_cmd(args, options, todo_list):
-    todo = get_todo_from_args_id(args)
+    todo = get_todo_from_args_id(args, todo_list)
     todo.completed = True
     save_todos(todo_list)
+    return print_todos(todo_list)
+
+def edit_cmd(args, options, todo_list):
+    todo = get_todo_from_args_id(args, todo_list)
+    if len(args) > 1:
+        todo.description = args[1]
+    if options.urgency_level:
+        todo.urgency_level = options.urgency_level
+    save_todos(todo_list)
+    return print_todos(todo_list)
 
 def delete_cmd(args, options, todo_list):
     id = get_id_from_args(args)
     todo_list = [todo for todo in todo_list if todo.id != id]
     save_todos(todo_list)
+    return print_todos(todo_list)
 
 
 # INPUT ARGUMENT HELPERS
 
-def get_todo_from_args_id(args):
+def get_todo_from_args_id(args, todo_list):
     id = get_id_from_args(args)
     todo = get_todo_by_id(id, todo_list)
     if not todo:
@@ -132,6 +145,7 @@ COMMAND_ROUTES = {
     'list': list_cmd,
     'add': add_cmd,
     'complete': complete_cmd,
+    'edit': edit_cmd,
     'delete': delete_cmd
 }
 COMMANDS = COMMAND_ROUTES.keys()
@@ -159,6 +173,15 @@ class Todo(object):
             'urgency_level': self.urgency_level,
             'completed': self.completed
         }
+
+    def __lt__(self, other):
+        return self.urgency_level < other.urgency_level
+
+    def __eq__(self, other):
+        return self.urgency_level == other.urgency_level
+
+    def __gt__(self, other):
+        return not any(self==other, self<other)
 
 
 # APPLICATION CONTROLLER
