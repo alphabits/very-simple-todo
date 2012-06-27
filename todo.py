@@ -98,19 +98,33 @@ def add_cmd(args, options, todo_list):
     return ''
 
 def complete_cmd(args, options, todo_list):
-    if not args:
-        raise Exception('Todo id is missing')
-    id = int(args[0])
+    todo = get_todo_from_args_id(args)
+    todo.completed = True
+    save_todos(todo_list)
+
+def delete_cmd(args, options, todo_list):
+    id = get_id_from_args(args)
+    todo_list = [todo for todo in todo_list if todo.id != id]
+    save_todos(todo_list)
+
+def get_todo_from_args_id(args):
+    id = get_id_from_args(args)
     todo = get_todo_by_id(id, todo_list)
     if not todo:
         raise Exception('Todo with id: '+str(id)+' not found')
-    todo[0].completed = True
-    save_todos(todo_list)
+    return todo[0]
+
+def get_id_from_args(args):
+    if not args:
+        raise Exception('Todo id is missing')
+    return int(args[0])
+
 
 COMMAND_ROUTES = {
     'list': list_cmd,
     'add': add_cmd,
-    'complete': complete_cmd
+    'complete': complete_cmd,
+    'delete': delete_cmd
 }
 COMMANDS = COMMAND_ROUTES.keys()
 
