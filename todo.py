@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import json
+from math import ceil, log10
 from optparse import OptionParser
 import os
 import sys
@@ -56,7 +57,6 @@ def get_option_parser():
     p.set_defaults(show_all=False)
     return p
 
-
 # OUTPUT FUNCTIONS
 
 def colorize(msg, color):
@@ -69,6 +69,11 @@ def print_todo(todo):
     color = 'grey' if todo.completed else COLORS[todo.urgency_level]
     return colorize(todo.label(), color)
 
+def pretty_print_digit(num, total_width=5):
+    num_digits_used = int(ceil(log10(num)))
+    num_spaces = total_width - num_digits_used
+    return ' '*num_spaces + str(num)
+
 
 # "DATABASE" FUNCTIONS
 
@@ -79,6 +84,9 @@ def get_next_todo_id(todo_list):
 
 def get_todo_by_id(id, todo_list):
     return [todo for todo in todo_list if todo.id == id]
+
+def get_active_todos(todo_list):
+    return [todo for todo in todo_list if not todo.complete]
 
 def save_todos(todo_list):
     data = [todo.to_data() for todo in todo_list]
@@ -100,13 +108,13 @@ def add_cmd(args, options, todo_list):
     urgency_level = options.urgency_level
     todo_list.append(Todo(id, description, urgency_level))
     save_todos(todo_list)
-    return print_todos(todo_list)
+    return print_todos(get_active_todos(todo_list))
 
 def complete_cmd(args, options, todo_list):
     todo = get_todo_from_args_id(args, todo_list)
     todo.completed = True
     save_todos(todo_list)
-    return print_todos(todo_list)
+    return print_todos(get_active_todos(todo_list))
 
 def edit_cmd(args, options, todo_list):
     todo = get_todo_from_args_id(args, todo_list)
@@ -115,13 +123,13 @@ def edit_cmd(args, options, todo_list):
     if options.urgency_level:
         todo.urgency_level = options.urgency_level
     save_todos(todo_list)
-    return print_todos(todo_list)
+    return print_todos(get_active_todos(todo_list))
 
 def delete_cmd(args, options, todo_list):
     id = get_id_from_args(args)
     todo_list = [todo for todo in todo_list if todo.id != id]
     save_todos(todo_list)
-    return print_todos(todo_list)
+    return print_todos(get_active_todos(todo_list))
 
 
 # INPUT ARGUMENT HELPERS
@@ -164,7 +172,8 @@ class Todo(object):
         self.completed = completed
 
     def label(self):
-        return u'{0}  {1}'.format(self.id, self.description) 
+        id = pretty_print_digit(self.id)
+        return u'{0}  {1}'.format(id, self.description) 
 
     def to_data(self):
         return {
