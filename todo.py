@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import json
-from math import ceil, log10
+from math import floor, log10
 from optparse import OptionParser
 import os
 import sys
@@ -70,7 +70,7 @@ def print_todo(todo):
     return colorize(todo.label(), color)
 
 def pretty_print_digit(num, total_width=5):
-    num_digits_used = int(ceil(log10(num)))
+    num_digits_used = int(floor(log10(num))+1)
     num_spaces = total_width - num_digits_used
     return ' '*num_spaces + str(num)
 
