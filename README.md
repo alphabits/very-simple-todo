@@ -4,7 +4,11 @@ This is a very basic command line script that lets you create, edit and delete a
 
 A todo list item consists of a description, an urgency level and a completed flag, that indicates whether you are done with the todo item or not.
 
-To setup the todo script you need to create a symbolic link, in one of the directories that is in your $PATH variable. In the examples it is assumed that a symbolic link with the name 'todo' is in one of the folders.
+To setup the todo script you need to create a symbolic link, in one of the directories that is in your $PATH variable. Executing
+
+    $ sudo ln -s /usr/local/bin/todo /path/to/todo.py
+
+should do the trick.
 
 
 ## Adding a todo
