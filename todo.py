@@ -85,7 +85,7 @@ def get_todo_by_id(id, todo_list):
     return [todo for todo in todo_list if todo.id == id]
 
 def get_active_todos(todo_list):
-    return [todo for todo in todo_list if not todo.complete]
+    return [todo for todo in todo_list if not todo.completed]
 
 def save_todos(todo_list):
     data = [todo.to_data() for todo in todo_list]
@@ -96,7 +96,7 @@ def save_todos(todo_list):
 
 def list_cmd(args, options, todo_list):
     if not options.show_all:
-        todo_list = [todo for todo in todo_list if not todo.completed]
+        todo_list = get_active_todos(todo_list)
     return print_todos(todo_list)
 
 def add_cmd(args, options, todo_list):
